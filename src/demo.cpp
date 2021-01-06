@@ -1,5 +1,4 @@
 #include <data_description.hpp>
-#include <generate.hpp>
 #include <generators/cpp.hpp>
 
 #include <filesystem>
@@ -32,8 +31,7 @@ int main(int argc, char** argv) {
       std::cout << "Output directory already exists\n";
     }
 
-    std::ofstream out(output_path);
-    dpsg::generate(test, dpsg::generators::cpp17, out);
+    dpsg::generators::cpp17(test, std::cout);
   }
   catch (std::exception& e) {
     std::cerr << e.what() << std::endl;
