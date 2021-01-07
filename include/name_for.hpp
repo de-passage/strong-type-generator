@@ -29,21 +29,56 @@ using name_for_t =
 template <class T>
 constexpr static inline auto name_for_v = name_for<T>::value;
 
+namespace detail {
 template <class T>
-struct name_for<
-    T,
-    std::enable_if_t<std::is_unsigned_v<T> && !std::is_const_v<T>>> {
-  constexpr static inline pseudo_string<const char*,
-                                        decltype(
-                                            name_for_v<std::make_signed_t<T>>)>
-      value{"unsigned ", name_for_v<std::make_signed_t<T>>};
-};
+using string_type_for = pseudo_string<const char*, name_for_t<T>>;
+template <class T>
+using string_type_for_r = pseudo_string<name_for_t<T>, const char*>;
+}  // namespace detail
 
 template <class T>
 struct name_for<T, std::enable_if_t<std::is_const_v<T>>> {
-  constexpr static inline pseudo_string<const char*,
-                                        name_for_t<std::remove_const_t<T>>>
-      value{"const ", name_for_v<std::remove_const_t<T>>};
+  constexpr static inline detail::string_type_for<std::remove_const_t<T>> value{
+      "const ",
+      name_for_v<std::remove_const_t<T>>};
+};
+
+template <class T>
+struct name_for<
+    T,
+    std::enable_if_t<std::is_volatile_v<T> && !std::is_const_v<T>>> {
+  constexpr static inline detail::string_type_for<std::remove_volatile_t<T>>
+      value{"volatile ", name_for_v<std::remove_volatile_t<T>>};
+};
+
+template <class T>
+struct name_for<
+    T,
+    std::enable_if_t<std::is_unsigned_v<T> &&
+                     !(std::is_const_v<T> || std::is_volatile_v<T>)>> {
+  constexpr static inline detail::string_type_for<std::make_signed_t<T>> value{
+      "unsigned ",
+      name_for_v<std::make_signed_t<T>>};
+};
+
+template <class T>
+struct name_for<
+    T,
+    std::enable_if_t<std::is_reference_v<T> &&
+                     !(std::is_const_v<T> || std::is_volatile_v<T> ||
+                       std::is_unsigned_v<T>)>> {
+  constexpr static inline detail::string_type_for_r<std::remove_reference_t<T>>
+      value{name_for_v<std::remove_reference_t<T>>, "&"};
+};
+
+template <class T>
+struct name_for<
+    T,
+    std::enable_if_t<std::is_pointer_v<T> &&
+                     !(std::is_const_v<T> || std::is_volatile_v<T> ||
+                       std::is_unsigned_v<T> || std::is_reference_v<T>)>> {
+  constexpr static inline detail::string_type_for_r<std::remove_pointer_t<T>>
+      value{name_for_v<std::remove_pointer_t<T>>, "*"};
 };
 
 }  // namespace dpsg

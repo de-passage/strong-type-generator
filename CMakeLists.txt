@@ -15,7 +15,7 @@ add_executable(demo ${DEMO_FILES})
 target_include_directories(demo PRIVATE ${HEADER_DIR})
 
 if(MSVC)
-  target_compile_options(demo PRIVATE /W4 /WX)
+  target_compile_options(demo PRIVATE /W4)
 else()
   target_compile_options(demo PRIVATE -Wall -Wextra -pedantic -Werror)
 endif()

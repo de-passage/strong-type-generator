@@ -16,7 +16,6 @@ struct cpp17_t {
   template <class V, template <class...> class T>
   constexpr static inline bool is_similar = std::is_base_of_v<feed_t<V, T>, V>;
 
- public:
   template <class Stream>
   static auto printer(Stream& out, int indent) noexcept {
     return [&out, indent](auto&&... vals) {
@@ -35,6 +34,7 @@ struct cpp17_t {
     };
   }
 
+ public:
   struct {
     template <class Stream, class Value>
     void operator()(Value&& value, Stream& out, int indent) const noexcept {
@@ -55,7 +55,7 @@ struct cpp17_t {
       }
     }
 
-  } constexpr static inline struct_gen;
+  } constexpr static inline struct_gen{};
 
   template <class Stream, class Value>
   void operator()(Value&& value, Stream& out, int indent = 0) const noexcept {
@@ -67,7 +67,10 @@ struct cpp17_t {
     if constexpr (is<value_type, dd::struct_t>) {
       println("struct ", std::forward<Value>(value).name, " {");
       visit(struct_gen, std::forward<Value>(value).members, out, indent + 1);
-      println("};");
+      println("};\n");
+    }
+    else if constexpr (is<value_type, std::tuple>) {
+      visit(*this, std::forward<Value>(value), out, indent);
     }
     else {
       static_assert(fail<value_type>, "Unsupported type");

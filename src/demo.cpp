@@ -11,8 +11,14 @@ namespace dds = dpsg::data_description;
 constexpr dds::struct_t test("test",
                              dds::value<unsigned int>,
                              dds::variable_t<const float>{"my_const_float"},
-                             dds::variable_t<const std::size_t>{"qualified"},
+                             dds::variable_t<const volatile std::size_t>{
+                                 "qualified"},
+                             dds::variable_t<char&>{"ref"},
                              dds::typedef_t<float>{"my_type"});
+
+constexpr dds::struct_t test2{"test2", dds::variable_t<const char*>{"string"}};
+
+constexpr auto tpl = std::tuple{test, test2};
 
 int main(int argc, char** argv) {
   namespace fs = std::filesystem;
@@ -35,7 +41,7 @@ int main(int argc, char** argv) {
       std::cout << "Output directory already exists\n";
     }
 
-    dpsg::generators::cpp17(test, std::cout);
+    dpsg::generators::cpp17(tpl, std::cout);
   }
   catch (std::exception& e) {
     std::cerr << e.what() << std::endl;
