@@ -8,7 +8,9 @@
 
 namespace dds = dpsg::data_description;
 
-constexpr dds::struct_t test("test", dds::value<float>);
+constexpr dds::struct_t test("test",
+                             dds::value<unsigned int>,
+                             dds::typedef_t<float>{"my_type"});
 
 int main(int argc, char** argv) {
   namespace fs = std::filesystem;

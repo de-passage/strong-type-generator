@@ -1,21 +1,46 @@
 #ifndef GUARD_DPSG_DATA_DESCRIPTION_HPP
 #define GUARD_DPSG_DATA_DESCRIPTION_HPP
 
+#include <ostream>
 #include <tuple>
 
+#include <iostream>
 #include <type_traits>
 
 namespace dpsg::data_description {
-template <class T>
+template <class T, class = void>
 struct name_for;
 
-template <typename T>
-struct variable_t {
-  constexpr explicit variable_t(const char* name) noexcept : name{name} {}
+template <class T>
+struct name_for<
+    T,
+    std::void_t<decltype(std::enable_if_t<std::is_unsigned_v<T>, int>{})>> {
+  struct pseudo_string {
+    constexpr static inline const char prefix[] = "unsigned ";
+    constexpr static inline const char* type_name =
+        name_for<std::make_signed_t<T>>::value;
+
+    template <class... Args>
+    friend std::basic_ostream<Args...>& operator<<(
+        std::basic_ostream<Args...>& out,
+        [[maybe_unused]] pseudo_string marker) noexcept {
+      return out << prefix << type_name;
+    }
+  } constexpr static inline value;
+};
+
+template <typename T, typename C = decltype(name_for<T>::value)>
+struct named_t {
+  constexpr explicit named_t(const char* name) noexcept : name{name} {}
   const char* name;
 
   using type = T;
-  constexpr static inline const char* type_name = name_for<T>::value;
+  constexpr static inline C type_name = name_for<T>::value;
+};
+
+template <typename T>
+struct variable_t : named_t<T> {
+  constexpr explicit variable_t(const char* name) noexcept : named_t<T>{name} {}
 };
 
 template <typename T>
@@ -43,9 +68,14 @@ template <class... Args>
 struct_t(const char* str, Args&&...)
     -> struct_t<std::remove_cv_t<std::remove_reference_t<Args>>...>;
 
+template <class T>
+struct typedef_t : named_t<T> {
+  constexpr explicit typedef_t(const char* name) noexcept : named_t<T>{name} {}
+};
+
 #define MAKE_NAME_STRUCT(name_)                         \
   template <>                                           \
-  struct name_for<name_> {                              \
+  struct name_for<name_, void> {                        \
     constexpr static inline const char* value = #name_; \
   };
 
