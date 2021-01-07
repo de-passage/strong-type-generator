@@ -70,6 +70,9 @@ struct feed<T<Args...>, C> {
 template <class T, template <class...> class C>
 using feed_t = typename feed<T, C>::type;
 
+template <class T>
+constexpr static inline bool fail = !std::is_same_v<T, T>;
+
 }  // namespace dpsg
 
 #endif  // GUARD_DPSG_META_HPP

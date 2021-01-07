@@ -10,6 +10,8 @@ namespace dds = dpsg::data_description;
 
 constexpr dds::struct_t test("test",
                              dds::value<unsigned int>,
+                             dds::variable_t<const float>{"my_const_float"},
+                             dds::variable_t<const std::size_t>{"qualified"},
                              dds::typedef_t<float>{"my_type"});
 
 int main(int argc, char** argv) {

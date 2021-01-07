@@ -65,12 +65,12 @@ struct cpp17_t {
     const auto println = printerln(out, indent);
 
     if constexpr (is<value_type, dd::struct_t>) {
-      println("struct ", std::forward<Value>(value).name, '{');
+      println("struct ", std::forward<Value>(value).name, " {");
       visit(struct_gen, std::forward<Value>(value).members, out, indent + 1);
       println("};");
     }
     else {
-      static_assert("Unsupported type");
+      static_assert(fail<value_type>, "Unsupported type");
     }
   }
 
